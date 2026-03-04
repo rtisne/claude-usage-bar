@@ -1,0 +1,5 @@
+.build/
+.swiftpm/
+*.zip
+ClaudeUsageBar.app/
+__pycache__/
