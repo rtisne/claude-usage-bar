@@ -93,22 +93,22 @@ class UsageHistoryService: ObservableObject {
     // MARK: - Downsampling
 
     func downsampledPoints(for range: TimeRange) -> [UsageDataPoint] {
-        let cutoff = Date().addingTimeInterval(-range.interval)
-        let filtered = history.dataPoints.filter { $0.timestamp >= cutoff }
+        let allPoints = history.dataPoints
 
-        guard filtered.count > range.targetPointCount else { return filtered }
+        guard allPoints.count > range.targetPointCount else { return allPoints }
 
-        let bucketCount = range.targetPointCount
-        let bucketDuration = range.interval / Double(bucketCount)
         let now = Date()
         let rangeStart = now.addingTimeInterval(-range.interval)
+        let bucketCount = range.targetPointCount
+        let bucketDuration = range.interval / Double(bucketCount)
 
         var buckets = [[UsageDataPoint]](repeating: [], count: bucketCount)
 
-        for point in filtered {
+        for point in allPoints {
             let offset = point.timestamp.timeIntervalSince(rangeStart)
             var index = Int(offset / bucketDuration)
-            index = min(max(index, 0), bucketCount - 1)
+            if index < 0 { index = 0 }
+            if index >= bucketCount { index = bucketCount - 1 }
             buckets[index].append(point)
         }
 

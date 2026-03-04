@@ -43,6 +43,7 @@ struct UsageChartView: View {
                     }
 
                 }
+                .chartXScale(domain: Date.now.addingTimeInterval(-selectedRange.interval)...Date.now)
                 .chartYScale(domain: 0...100)
                 .chartYAxis {
                     AxisMarks(values: [0, 25, 50, 75, 100]) { value in
