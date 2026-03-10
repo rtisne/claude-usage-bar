@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v*', 'V*']
   workflow_dispatch:
     inputs:
       version:
@@ -129,6 +129,7 @@ jobs:
 
   release_windows:
     needs: release
+    if: ${{ !cancelled() }}
     runs-on: windows-latest
     permissions:
       contents: write
@@ -151,6 +152,14 @@ jobs:
       - name: Run tests
         working-directory: windows
         run: npm test
+
+      - name: Set version from tag
+        working-directory: windows
+        shell: bash
+        run: |
+          version="${TAG_NAME#v}"
+          version="${version#V}"
+          npm version "$version" --no-git-tag-version --allow-same-version
 
       - name: Build Windows distributables
         working-directory: windows
