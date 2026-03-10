@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Claude Usage Bar — Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .settings-section {
+      margin-bottom: 20px;
+    }
+    .settings-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .setting-item {
+      margin-bottom: 12px;
+    }
+    .setting-item label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .account-email {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    select {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+    select:focus {
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div id="settings-app">
+    <div class="settings-section">
+      <h3>General</h3>
+      <div class="setting-item">
+        <label>
+          <span>Launch at Login</span>
+          <input type="checkbox" id="settings-startup" class="toggle">
+        </label>
+      </div>
+      <div class="setting-item">
+        <label>
+          <span>Polling Interval</span>
+          <select id="settings-polling">
+            <option value="5">5m (not recommended)</option>
+            <option value="15">15m (not recommended)</option>
+            <option value="30">30m</option>
+            <option value="60">1h</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Notifications</h3>
+      <div class="threshold-slider">
+        <div class="threshold-header">
+          <span>5-hour window</span>
+          <span id="settings-threshold-5h-label" class="threshold-value">Off</span>
+        </div>
+        <input type="range" id="settings-threshold-5h" min="0" max="100" step="5" value="0">
+      </div>
+      <div class="threshold-slider">
+        <div class="threshold-header">
+          <span>7-day window</span>
+          <span id="settings-threshold-7d-label" class="threshold-value">Off</span>
+        </div>
+        <input type="range" id="settings-threshold-7d" min="0" max="100" step="5" value="0">
+      </div>
+      <div class="threshold-slider">
+        <div class="threshold-header">
+          <span>Extra usage</span>
+          <span id="settings-threshold-extra-label" class="threshold-value">Off</span>
+        </div>
+        <input type="range" id="settings-threshold-extra" min="0" max="100" step="5" value="0">
+      </div>
+    </div>
+
+    <div class="settings-section" id="account-section" style="display: none;">
+      <h3>Account</h3>
+      <p class="account-email" id="account-email"></p>
+      <button id="signout-btn" class="btn primary">Sign Out</button>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

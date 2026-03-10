@@ -1,0 +1,39 @@
+{
+  "name": "claude-usage-bar",
+  "version": "1.0.0",
+  "description": "Windows system tray app that displays Claude API usage at a glance",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test src/**/*.test.js",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "electron": "^35.1.5",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.local.ClaudeUsageBar",
+    "productName": "Claude Usage Bar",
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "runAfterFinish": true
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*"
+    ]
+  }
+}
