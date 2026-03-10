@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Claude Usage Bar</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Setup view (first launch) -->
+    <div id="setup-view" class="hidden">
+      <h2>Welcome</h2>
+      <p class="subtitle">Configure your preferences to get started.</p>
+      <hr>
+      <div class="setting-row">
+        <label class="toggle-label">
+          <span>Launch at Login</span>
+          <input type="checkbox" id="setup-startup" class="toggle">
+        </label>
+      </div>
+      <hr>
+      <div class="section">
+        <p class="section-label">Notifications</p>
+        <div class="threshold-slider">
+          <div class="threshold-header">
+            <span>5-hour window</span>
+            <span id="setup-threshold-5h-label" class="threshold-value">Off</span>
+          </div>
+          <input type="range" id="setup-threshold-5h" min="0" max="100" step="5" value="0">
+        </div>
+        <div class="threshold-slider">
+          <div class="threshold-header">
+            <span>7-day window</span>
+            <span id="setup-threshold-7d-label" class="threshold-value">Off</span>
+          </div>
+          <input type="range" id="setup-threshold-7d" min="0" max="100" step="5" value="0">
+        </div>
+        <div class="threshold-slider">
+          <div class="threshold-header">
+            <span>Extra usage</span>
+            <span id="setup-threshold-extra-label" class="threshold-value">Off</span>
+          </div>
+          <input type="range" id="setup-threshold-extra" min="0" max="100" step="5" value="0">
+        </div>
+      </div>
+      <hr>
+      <div class="section">
+        <p class="section-label">Polling Interval</p>
+        <div id="setup-polling" class="segmented-control"></div>
+        <p id="setup-polling-warning" class="warning hidden">Frequent polling may cause rate limiting</p>
+      </div>
+      <hr>
+      <button id="setup-done-btn" class="btn primary full-width">Get Started</button>
+      <div class="footer-row">
+        <span></span>
+        <button id="setup-quit-btn" class="btn link subtle">Quit</button>
+      </div>
+    </div>
+
+    <!-- Sign in view -->
+    <div id="signin-view" class="hidden">
+      <h2>Claude Usage</h2>
+      <div id="code-entry" class="hidden">
+        <p class="subtitle">Paste the code from your browser:</p>
+        <div class="code-input-row">
+          <input type="text" id="code-input" placeholder="code#state" spellcheck="false">
+          <button id="paste-btn" class="btn icon" title="Paste from clipboard">📋</button>
+        </div>
+        <div class="button-row">
+          <button id="cancel-code-btn" class="btn link">Cancel</button>
+          <span class="spacer"></span>
+          <button id="submit-code-btn" class="btn primary" disabled>Submit</button>
+        </div>
+      </div>
+      <div id="signin-prompt">
+        <p class="subtitle">Sign in to view your usage.</p>
+        <button id="signin-btn" class="btn primary full-width">Sign in with Claude</button>
+      </div>
+      <div id="signin-error" class="error hidden"></div>
+      <hr>
+      <div class="footer-row">
+        <button id="signin-settings-btn" class="btn link">Settings…</button>
+        <span class="spacer"></span>
+        <button id="signin-quit-btn" class="btn link subtle">Quit</button>
+      </div>
+    </div>
+
+    <!-- Main usage view -->
+    <div id="usage-view" class="hidden">
+      <h2>Claude Usage</h2>
+
+      <div id="bucket-5h" class="usage-bucket">
+        <div class="bucket-header">
+          <span class="bucket-label">5-Hour Window</span>
+          <span class="bucket-pct" id="pct-5h">—</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="fill-5h"></div>
+        </div>
+        <p class="reset-text" id="reset-5h"></p>
+      </div>
+
+      <div id="bucket-7d" class="usage-bucket">
+        <div class="bucket-header">
+          <span class="bucket-label">7-Day Window</span>
+          <span class="bucket-pct" id="pct-7d">—</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="fill-7d"></div>
+        </div>
+        <p class="reset-text" id="reset-7d"></p>
+      </div>
+
+      <div id="per-model-section" class="hidden">
+        <hr>
+        <p class="section-label">Per-Model (7 day)</p>
+        <div id="bucket-opus" class="usage-bucket">
+          <div class="bucket-header">
+            <span class="bucket-label">Opus</span>
+            <span class="bucket-pct" id="pct-opus">—</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-opus"></div>
+          </div>
+        </div>
+        <div id="bucket-sonnet" class="usage-bucket">
+          <div class="bucket-header">
+            <span class="bucket-label">Sonnet</span>
+            <span class="bucket-pct" id="pct-sonnet">—</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-sonnet"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="extra-usage-section" class="hidden">
+        <hr>
+        <div class="usage-bucket">
+          <p class="section-label">Extra Usage</p>
+          <div class="bucket-header">
+            <span class="bucket-label" id="extra-credits"></span>
+            <span class="bucket-pct" id="extra-pct">—</span>
+          </div>
+          <div class="progress-bar blue">
+            <div class="progress-fill blue" id="fill-extra"></div>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+      <!-- Chart section -->
+      <div id="chart-section">
+        <div id="chart-range-picker" class="segmented-control">
+          <button class="seg-btn active" data-range="1h">1h</button>
+          <button class="seg-btn" data-range="6h">6h</button>
+          <button class="seg-btn" data-range="1d">1d</button>
+          <button class="seg-btn" data-range="7d">7d</button>
+          <button class="seg-btn" data-range="30d">30d</button>
+        </div>
+        <div id="chart-container">
+          <canvas id="usage-chart" width="310" height="120"></canvas>
+          <div id="chart-tooltip" class="hidden"></div>
+          <p id="chart-empty" class="subtitle center hidden">No history data yet.</p>
+        </div>
+      </div>
+
+      <div id="usage-error" class="error hidden"></div>
+
+      <hr>
+
+      <div class="footer-row">
+        <span id="last-updated" class="caption"></span>
+        <span class="spacer"></span>
+      </div>
+      <div class="footer-row">
+        <button id="usage-settings-btn" class="btn link">Settings…</button>
+        <span class="spacer"></span>
+        <button id="refresh-btn" class="btn link">Refresh</button>
+        <button id="usage-quit-btn" class="btn link subtle">Quit</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

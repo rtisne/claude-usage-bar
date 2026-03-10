@@ -13,12 +13,14 @@ Now it's just a glimpse away — always sitting at the top of your screen.
 </p>
 
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
+![Windows 10+](https://img.shields.io/badge/Windows-10%2B-0078d4)
 ![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
+![Electron](https://img.shields.io/badge/Electron-35-47848f)
 ![License](https://img.shields.io/badge/license-BSD--2--Clause-green)
 
 ## What it does
 
-A tiny macOS menu bar app that shows your Claude API usage at a glance. Click it for the full picture:
+A menu bar (macOS) / system tray (Windows) app that shows your Claude API usage at a glance. Click it for the full picture:
 
 - Menu bar icon with a mini dual-bar showing 5-hour and 7-day utilization
 - Detailed popover with per-window usage, per-model breakdown, and reset timers
@@ -32,14 +34,16 @@ A tiny macOS menu bar app that shows your Claude API usage at a glance. Click it
 
 ## Install
 
-### Download
+### macOS
+
+#### Download
 
 1. Download `ClaudeUsageBar.dmg` from the [latest release](https://github.com/Blimp-Labs/claude-usage-bar/releases/latest)
 2. Open the disk image and drag `ClaudeUsageBar.app` into `Applications`
 3. Launch the app from `/Applications`
 4. macOS may require right-click → **Open** on first launch
 
-### Build from source
+#### Build from source
 
 Requires Xcode 15+ / Swift 5.9+ and macOS 14 (Sonoma) or later.
 
@@ -50,6 +54,22 @@ make app            # build .app bundle
 make dmg            # build drag-to-Applications disk image
 make install        # copy to /Applications
 ```
+
+### Windows
+
+#### Build from source
+
+Requires [Node.js](https://nodejs.org/) 18+ and npm.
+
+```powershell
+git clone https://github.com/Blimp-Labs/claude-usage-bar.git
+cd claude-usage-bar/windows
+npm install
+npm start           # run in development mode
+npm run dist        # build Windows installer (.exe)
+```
+
+See the [Windows README](windows/README.md) for more details.
 
 ## Usage
 
@@ -159,6 +179,26 @@ macos/                           # macOS menu bar app (Swift/SwiftUI)
 │   ├── build.sh                     # Build + bundle + codesign
 │   └── generate-logo-png.swift      # Regenerate logo PNG from SVG
 └── Package.swift
+
+windows/                         # Windows system tray app (Electron)
+├── src/
+│   ├── main.js                      # Electron main process (tray, IPC)
+│   ├── preload.js                   # Context bridge
+│   ├── renderer/                    # Popup & settings UI
+│   │   ├── index.html
+│   │   ├── settings.html
+│   │   ├── styles.css
+│   │   ├── app.js
+│   │   └── settings.js
+│   └── services/                    # Business logic
+│       ├── usage-service.js
+│       ├── credentials-store.js
+│       ├── history-service.js
+│       ├── notification-service.js
+│       ├── settings-store.js
+│       └── tray-icon.js
+├── assets/
+└── package.json
 
 scripts/                         # Shared tooling
 └── mock-server.py               # Local mock API for development
