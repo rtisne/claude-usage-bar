@@ -3,9 +3,15 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.version || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -15,15 +21,26 @@ jobs:
       contents: write
     env:
       REPOSITORY_NAME: ${{ github.event.repository.name }}
+      TAG_NAME: ${{ inputs.version && format('v{0}', inputs.version) || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create and push tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if git ls-remote --tags origin "$TAG_NAME" | grep -q "$TAG_NAME"; then
+            echo "::error::Tag $TAG_NAME already exists on remote."
+            exit 1
+          fi
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
       - name: Build release app bundle
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG_NAME#v}"
           owner="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
           export APP_VERSION="$version"
           export SU_FEED_URL="https://${owner}.github.io/${REPOSITORY_NAME}/appcast.xml"
@@ -44,7 +61,7 @@ jobs:
 
           gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
             --method POST \
-            -f tag_name="${GITHUB_REF_NAME}" \
+            -f tag_name="${TAG_NAME}" \
             --jq '.body' > dist/release-notes.md
 
           python3 - <<'PY'
@@ -80,6 +97,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG_NAME }}
           files: |
             macos/ClaudeUsageBar.zip
             macos/ClaudeUsageBar.dmg
@@ -100,7 +118,7 @@ jobs:
             macos/.build/artifacts/sparkle/Sparkle/bin/generate_appcast \
               dist/archives \
               --ed-key-file - \
-              --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/" \
+              --download-url-prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/" \
               --maximum-deltas 0 \
               -o dist/site/appcast.xml
 
@@ -114,6 +132,8 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+    env:
+      TAG_NAME: ${{ inputs.version && format('v{0}', inputs.version) || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -139,6 +159,7 @@ jobs:
       - name: Upload Windows artifacts to release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG_NAME }}
           files: |
             windows/dist/*.exe
 
