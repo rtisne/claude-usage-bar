@@ -6,6 +6,7 @@ struct PopoverView: View {
     @ObservedObject var notificationService: NotificationService
     @ObservedObject var appUpdater: AppUpdater
     @AppStorage("setupComplete") private var setupComplete = false
+    @AppStorage("compactMode") private var compactMode = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -74,71 +75,73 @@ struct PopoverView: View {
             bucket: service.usage?.sevenDay
         )
 
-        if let opus = service.usage?.sevenDayOpus,
-           opus.utilization != nil {
-            Divider()
-            Text("Per-Model (7 day)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            UsageBucketRow(label: "Opus", bucket: opus)
-            if let sonnet = service.usage?.sevenDaySonnet {
-                UsageBucketRow(label: "Sonnet", bucket: sonnet)
-            }
-        }
-
-        if let extra = service.usage?.extraUsage, extra.isEnabled {
-            Divider()
-            ExtraUsageRow(extra: extra)
-        }
-
-        Divider()
-        UsageChartView(historyService: historyService)
-
-        if let error = service.lastError {
-            Divider()
-            Label(error, systemImage: "exclamationmark.triangle")
-                .foregroundStyle(.red)
-                .font(.caption)
-        }
-
-        if let updaterError = appUpdater.lastError {
-            Divider()
-            Label(updaterError, systemImage: "arrow.triangle.2.circlepath.circle")
-                .foregroundStyle(.red)
-                .font(.caption)
-        }
-
-        Divider()
-
-        HStack(spacing: 12) {
-            if let updated = service.lastUpdated {
-                Text("Updated \(updated, style: .relative) ago")
-                    .font(.caption)
+        if !compactMode {
+            if let opus = service.usage?.sevenDayOpus,
+               opus.utilization != nil {
+                Divider()
+                Text("Per-Model (7 day)")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
+                UsageBucketRow(label: "Opus", bucket: opus)
+                if let sonnet = service.usage?.sevenDaySonnet {
+                    UsageBucketRow(label: "Sonnet", bucket: sonnet)
+                }
             }
-            Spacer()
-        }
 
-        HStack(spacing: 12) {
-            settingsButton
-            Spacer()
-            Button("Refresh") {
-                Task { await service.fetchUsage() }
+            if let extra = service.usage?.extraUsage, extra.isEnabled {
+                Divider()
+                ExtraUsageRow(extra: extra)
             }
-            .buttonStyle(.borderless)
-            .font(.caption)
-            if appUpdater.isConfigured {
-                Button("Check for Updates…") {
-                    appUpdater.checkForUpdates()
+
+            Divider()
+            UsageChartView(historyService: historyService)
+
+            if let error = service.lastError {
+                Divider()
+                Label(error, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.red)
+                    .font(.caption)
+            }
+
+            if let updaterError = appUpdater.lastError {
+                Divider()
+                Label(updaterError, systemImage: "arrow.triangle.2.circlepath.circle")
+                    .foregroundStyle(.red)
+                    .font(.caption)
+            }
+
+            Divider()
+
+            HStack(spacing: 12) {
+                if let updated = service.lastUpdated {
+                    Text("Updated \(updated, style: .relative) ago")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                settingsButton
+                Spacer()
+                Button("Refresh") {
+                    Task { await service.fetchUsage() }
                 }
                 .buttonStyle(.borderless)
                 .font(.caption)
-                .disabled(!appUpdater.canCheckForUpdates)
+                if appUpdater.isConfigured {
+                    Button("Check for Updates…") {
+                        appUpdater.checkForUpdates()
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.caption)
+                    .disabled(!appUpdater.canCheckForUpdates)
+                }
+                Button("Quit") { NSApplication.shared.terminate(nil) }
+                    .buttonStyle(.borderless)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            Button("Quit") { NSApplication.shared.terminate(nil) }
-                .buttonStyle(.borderless)
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
 

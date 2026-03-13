@@ -139,12 +139,14 @@ function sendStateToPopover() {
       ...usageService.getState(),
       history: historyService.dataPoints,
       notifications: notificationService.getState(),
+      compactMode: settingsStore.get('compactMode') || false,
     });
   }
   if (settingsWindow && !settingsWindow.isDestroyed()) {
     settingsWindow.webContents.send('state-update', {
       ...usageService.getState(),
       notifications: notificationService.getState(),
+      compactMode: settingsStore.get('compactMode') || false,
     });
   }
 }
@@ -155,6 +157,7 @@ function setupIPC() {
     history: historyService.dataPoints,
     notifications: notificationService.getState(),
     pollingOptions: POLLING_OPTIONS,
+    compactMode: settingsStore.get('compactMode') || false,
   }));
 
   ipcMain.handle('start-oauth', () => {
@@ -217,6 +220,16 @@ function setupIPC() {
 
   ipcMain.handle('set-startup-enabled', (_event, enabled) => {
     app.setLoginItemSettings({ openAtLogin: enabled });
+    return true;
+  });
+
+  ipcMain.handle('get-compact-mode', () => {
+    return settingsStore.get('compactMode') || false;
+  });
+
+  ipcMain.handle('set-compact-mode', (_event, enabled) => {
+    settingsStore.set('compactMode', enabled);
+    sendStateToPopover();
     return true;
   });
 

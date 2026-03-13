@@ -23,6 +23,11 @@ function bindEvents() {
     window.api.updatePolling(parseInt(e.target.value, 10));
   });
 
+  // Compact mode toggle
+  document.getElementById('settings-compact-mode').addEventListener('change', (e) => {
+    window.api.setCompactMode(e.target.checked);
+  });
+
   // Threshold sliders
   bindSlider('settings-threshold-5h', (v) => window.api.setThreshold5h(v));
   bindSlider('settings-threshold-7d', (v) => window.api.setThreshold7d(v));
@@ -54,6 +59,11 @@ function render() {
 
   // Polling
   document.getElementById('settings-polling').value = String(currentState.pollingMinutes);
+
+  // Compact mode
+  window.api.getCompactMode().then((enabled) => {
+    document.getElementById('settings-compact-mode').checked = enabled;
+  });
 
   // Thresholds
   if (currentState.notifications) {
