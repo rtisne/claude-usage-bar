@@ -125,6 +125,34 @@ function render() {
     usageView.classList.remove('hidden');
     renderUsage();
   }
+
+  adjustWindowSize();
+}
+
+const POPOVER_DEFAULT_HEIGHT = 460;
+let lastWindowHeight = POPOVER_DEFAULT_HEIGHT;
+
+function adjustWindowSize() {
+  const compact = currentState?.compactMode || false;
+  if (!compact) {
+    if (lastWindowHeight !== POPOVER_DEFAULT_HEIGHT) {
+      lastWindowHeight = POPOVER_DEFAULT_HEIGHT;
+      window.api.resizeWindow(POPOVER_DEFAULT_HEIGHT);
+    }
+    return;
+  }
+  // In compact mode, measure actual content and resize
+  requestAnimationFrame(() => {
+    const app = document.getElementById('app');
+    const bodyStyle = getComputedStyle(document.body);
+    const bodyPadding = (parseFloat(bodyStyle.paddingTop) || 0)
+      + (parseFloat(bodyStyle.paddingBottom) || 0);
+    const height = app.offsetHeight + bodyPadding;
+    if (height !== lastWindowHeight) {
+      lastWindowHeight = height;
+      window.api.resizeWindow(height);
+    }
+  });
 }
 
 function renderSetup() {
