@@ -195,6 +195,7 @@ function renderSignIn() {
 
 function renderUsage() {
   const usage = currentState.usage;
+  const compact = currentState.compactMode || false;
 
   // 5-hour bucket
   renderBucket('5h', usage?.fiveHour);
@@ -202,7 +203,7 @@ function renderUsage() {
 
   // Per-model section
   const perModelSection = document.getElementById('per-model-section');
-  if (usage?.sevenDayOpus?.utilization != null) {
+  if (!compact && usage?.sevenDayOpus?.utilization != null) {
     perModelSection.classList.remove('hidden');
     renderBucket('opus', usage.sevenDayOpus);
     if (usage?.sevenDaySonnet) {
@@ -217,7 +218,7 @@ function renderUsage() {
 
   // Extra usage
   const extraSection = document.getElementById('extra-usage-section');
-  if (usage?.extraUsage?.is_enabled) {
+  if (!compact && usage?.extraUsage?.is_enabled) {
     extraSection.classList.remove('hidden');
     const pct = usage.extraUsage.utilization;
     document.getElementById('extra-pct').textContent =
@@ -237,25 +238,54 @@ function renderUsage() {
     extraSection.classList.add('hidden');
   }
 
+  // Chart section
+  const chartSection = document.getElementById('chart-section');
+  const chartDivider = chartSection.previousElementSibling;
+  if (compact) {
+    chartSection.classList.add('hidden');
+    if (chartDivider && chartDivider.tagName === 'HR') chartDivider.classList.add('hidden');
+  } else {
+    chartSection.classList.remove('hidden');
+    if (chartDivider && chartDivider.tagName === 'HR') chartDivider.classList.remove('hidden');
+  }
+
   // Error
   const errorEl = document.getElementById('usage-error');
-  if (currentState.lastError) {
+  if (!compact && currentState.lastError) {
     errorEl.textContent = currentState.lastError;
     errorEl.classList.remove('hidden');
   } else {
     errorEl.classList.add('hidden');
   }
 
-  // Last updated
-  if (currentState.lastUpdated) {
-    document.getElementById('last-updated').textContent =
-      `Updated ${relativeTime(new Date(currentState.lastUpdated))}`;
+  // Footer
+  const lastUpdated = document.getElementById('last-updated');
+  const footerRows = document.querySelectorAll('#usage-view .footer-row');
+  const footerDividers = document.querySelectorAll('#usage-view > hr:last-of-type');
+  if (compact) {
+    lastUpdated.parentElement.classList.add('hidden');
+    footerRows.forEach((row) => row.classList.add('hidden'));
+    // Hide the last <hr> before footer
+    const hrs = document.querySelectorAll('#usage-view > hr');
+    if (hrs.length > 0) hrs[hrs.length - 1].classList.add('hidden');
   } else {
-    document.getElementById('last-updated').textContent = '';
+    footerRows.forEach((row) => row.classList.remove('hidden'));
+    const hrs = document.querySelectorAll('#usage-view > hr');
+    if (hrs.length > 0) hrs[hrs.length - 1].classList.remove('hidden');
+
+    // Last updated
+    if (currentState.lastUpdated) {
+      lastUpdated.textContent =
+        `Updated ${relativeTime(new Date(currentState.lastUpdated))}`;
+    } else {
+      lastUpdated.textContent = '';
+    }
   }
 
-  // Chart
-  renderChart();
+  // Chart (only render when not compact)
+  if (!compact) {
+    renderChart();
+  }
 }
 
 function renderBucket(key, bucket) {

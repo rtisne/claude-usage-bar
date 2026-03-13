@@ -5,6 +5,8 @@ struct SettingsWindowContent: View {
     @ObservedObject var service: UsageService
     @ObservedObject var notificationService: NotificationService
 
+    @AppStorage("compactMode") private var compactMode = false
+
     var body: some View {
         Form {
             Section("General") {
@@ -19,6 +21,8 @@ struct SettingsWindowContent: View {
                             .tag(mins)
                     }
                 }
+
+                Toggle("Compact Mode", isOn: $compactMode)
             }
 
             Section("Notifications") {

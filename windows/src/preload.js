@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('api', {
   getHistory: (rangeKey) => ipcRenderer.invoke('get-history', rangeKey),
   getStartupEnabled: () => ipcRenderer.invoke('get-startup-enabled'),
   setStartupEnabled: (enabled) => ipcRenderer.invoke('set-startup-enabled', enabled),
+  getCompactMode: () => ipcRenderer.invoke('get-compact-mode'),
+  setCompactMode: (enabled) => ipcRenderer.invoke('set-compact-mode', enabled),
   quitApp: () => ipcRenderer.invoke('quit-app'),
   pasteFromClipboard: () => ipcRenderer.invoke('paste-from-clipboard'),
   onStateUpdate: (callback) => {
