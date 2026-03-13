@@ -261,9 +261,7 @@ function renderUsage() {
   // Footer
   const lastUpdated = document.getElementById('last-updated');
   const footerRows = document.querySelectorAll('#usage-view .footer-row');
-  const footerDividers = document.querySelectorAll('#usage-view > hr:last-of-type');
   if (compact) {
-    lastUpdated.parentElement.classList.add('hidden');
     footerRows.forEach((row) => row.classList.add('hidden'));
     // Hide the last <hr> before footer
     const hrs = document.querySelectorAll('#usage-view > hr');
