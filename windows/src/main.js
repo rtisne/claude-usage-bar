@@ -35,7 +35,7 @@ function createPopoverWindow() {
 
   popoverWindow = new BrowserWindow({
     width: 360,
-    height: 520,
+    height: 460,
     show: false,
     frame: false,
     resizable: false,
@@ -72,7 +72,8 @@ function showPopover() {
   const windowBounds = popoverWindow.getBounds();
 
   // Position window above the tray icon (Windows taskbar is usually at bottom)
-  const x = Math.round(trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2);
+  // Shift slightly left so the window is not completely stuck to the right edge
+  const x = Math.round(trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2) - 10;
   const y = Math.round(trayBounds.y - windowBounds.height);
 
   popoverWindow.setPosition(x, Math.max(0, y));

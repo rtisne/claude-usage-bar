@@ -156,8 +156,8 @@ hr {
 }
 
 .reset-text {
-  font-size: 10px;
-  color: var(--text-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
