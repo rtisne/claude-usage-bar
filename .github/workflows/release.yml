@@ -159,6 +159,12 @@ jobs:
         run: |
           version="${TAG_NAME#v}"
           version="${version#V}"
+          # Normalize to valid semver (e.g., 1.1 -> 1.1.0)
+          case "$version" in
+            *.*.*) ;;
+            *.*) version="$version.0" ;;
+            *) version="$version.0.0" ;;
+          esac
           npm version "$version" --no-git-tag-version --allow-same-version
 
       - name: Build Windows distributables
