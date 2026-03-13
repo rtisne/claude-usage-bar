@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('api', {
   setStartupEnabled: (enabled) => ipcRenderer.invoke('set-startup-enabled', enabled),
   getCompactMode: () => ipcRenderer.invoke('get-compact-mode'),
   setCompactMode: (enabled) => ipcRenderer.invoke('set-compact-mode', enabled),
+  resizeWindow: (height) => ipcRenderer.invoke('resize-window', height),
   quitApp: () => ipcRenderer.invoke('quit-app'),
   pasteFromClipboard: () => ipcRenderer.invoke('paste-from-clipboard'),
   onStateUpdate: (callback) => {

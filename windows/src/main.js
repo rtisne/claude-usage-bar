@@ -26,6 +26,10 @@ let historyService = null;
 let notificationService = null;
 let settingsStore = null;
 
+const POPOVER_WIDTH = 360;
+const POPOVER_HEIGHT = 460;
+const POPOVER_COMPACT_HEIGHT = 160;
+
 function createPopoverWindow() {
   if (popoverWindow && !popoverWindow.isDestroyed()) {
     popoverWindow.show();
@@ -33,9 +37,11 @@ function createPopoverWindow() {
     return;
   }
 
+  const compact = settingsStore.get('compactMode') || false;
+
   popoverWindow = new BrowserWindow({
-    width: 360,
-    height: 460,
+    width: POPOVER_WIDTH,
+    height: compact ? POPOVER_COMPACT_HEIGHT : POPOVER_HEIGHT,
     show: false,
     frame: false,
     resizable: false,
@@ -230,6 +236,21 @@ function setupIPC() {
   ipcMain.handle('set-compact-mode', (_event, enabled) => {
     settingsStore.set('compactMode', enabled);
     sendStateToPopover();
+    return true;
+  });
+
+  ipcMain.handle('resize-window', (_event, height) => {
+    if (popoverWindow && !popoverWindow.isDestroyed()) {
+      const [width] = popoverWindow.getSize();
+      popoverWindow.setSize(width, height);
+      // Reposition above tray since height changed
+      if (tray) {
+        const trayBounds = tray.getBounds();
+        const x = Math.round(trayBounds.x + trayBounds.width / 2 - width / 2) - 10;
+        const y = Math.round(trayBounds.y - height);
+        popoverWindow.setPosition(x, Math.max(0, y));
+      }
+    }
     return true;
   });
 
